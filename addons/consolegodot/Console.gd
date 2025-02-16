@@ -8,6 +8,12 @@ extends Resource
 ## It allows running predefined commands such as `clear`, `list`, `inspect`, and `exec`.
 
 
+const COMAND_HELP = "help [comand]"
+const COMAND_CLEAR = "clear"
+const COMAND_LIST = "list [depth | path_of_nodo [depth]]"
+const COMAND_INSPECT = "inspect path_of_node property1 [property2 ...]"
+const COMAND_EXEC = "exec ruta_del_nodo metodo|propiedad [parametro1 ...]"
+
 var _node: Node
 
 
@@ -27,6 +33,8 @@ func do(command: String) -> String:
 	var result: String
 	
 	match args[0]:
+		"help":
+			result = _comands_help(args)
 		"clear":
 			result = _comands_clear(args)
 		"list":
@@ -36,7 +44,7 @@ func do(command: String) -> String:
 		"exec":
 			result = _comands_exec(args)
 		_:
-			result = "command"
+			result = "Error: Incorrect use. Use help for most information"
 	
 	return result
 
@@ -52,6 +60,44 @@ func get_root_scene() -> Node:
 	return null
 
 
+func _comands_help(args: Array) -> String:
+	var long := args.size()
+	
+	var message_help := "Show help for the comands"
+	var message_clear := "clear messages of the output"
+	var message_list := "List nodes from the root or the specified node, with optional depth"
+	var message_inspect := "Show the values ​​of the specified properties of the specified node"
+	var message_exec := "Executes a method or gets/sets a property on the specified node"
+	
+	var result := ""
+	match str(long):
+		"1":
+			result += "Help\n"
+			result += "\t- help		-> %s - %s\n" % [COMAND_HELP, message_help]
+			result += "\t- clear	-> %s - %s\n" % [COMAND_CLEAR, message_clear]
+			result += "\t- list		-> %s - %s\n" % [COMAND_LIST, message_list]
+			result += "\t- inspect	-> %s - %s\n" % [COMAND_INSPECT, message_inspect]
+			result += "\t- exec		-> %s - %s" % [COMAND_EXEC, message_exec]
+		"2":
+			match str(args[1]):
+				"help":
+					result = "Help comand help -> %s - %s" % [COMAND_HELP, message_help]
+				"clear":
+					result = "Help comand clear -> %s - %s" % [COMAND_CLEAR, message_clear]
+				"list":
+					result = "Help comand list -> %s - %s" % [COMAND_LIST, message_list]
+				"inspect":
+					result = "Help comand inspect -> %s - %s" % [COMAND_INSPECT, message_inspect]
+				"exec":
+					result = "Help comand exec -> %s - %s" % [COMAND_EXEC, message_exec]
+				_:
+					result = "Help, comand %s does not exists" % [args[1]]
+		_:
+			return "Error: Incorrect use. Expected format: %s" % [COMAND_HELP]
+	
+	return result
+
+
 func _comands_clear(args: Array) -> String:
 	var long := args.size()
 	
@@ -59,7 +105,7 @@ func _comands_clear(args: Array) -> String:
 		"1":
 			return ""
 	
-	return "do"
+	return "Error: Incorrect use. Expected format: %s" % [COMAND_CLEAR]
 
 
 func _comands_list(args: Array) -> String:
@@ -69,23 +115,37 @@ func _comands_list(args: Array) -> String:
 	var max_depth: int
 	
 	node = get_root_scene()
+	var error := false
 	match str(long):
 		"1":
+			# list child nodes of the root
 			max_depth = 1
 		"2":
+			# list nodes up to a given depth
 			if args[1] is int:
 				max_depth = args[1]
-			elif args[1] is String:
+			# list child nodes of the instantiated node
+			elif args[1] is String and node.has_node(args[1]):
 				node = node.get_node(args[1])
 				max_depth = 1
+			else:
+				error = true
 		"3":
-			if args[1] is String:
+			# list child nodes up to a given depth
+			if args[1] is String and args[2] is int:
 				node = node.get_node(args[1])
-				if args[2] is int:
-					max_depth = args[2]
+				max_depth = args[2]
+			else:
+				error = true
+		_:
+			error = true
+	
+	if error:
+		return "Error: Incorrect use. Expected format: %s" % [COMAND_LIST]
 	
 	_get_nodes(node, node_counts, 0, max_depth)
 	
+	# build result in format of list
 	var result := "List Nodes [%s] depth: %s" % [node.get_class(), max_depth]
 	var entries := []
 	for i in node_counts.keys():
@@ -96,55 +156,73 @@ func _comands_list(args: Array) -> String:
 
 func _comands_inspect(args: Array) -> String:
 	var long := args.size()
-	var node: Node
+	var node := get_root_scene()
 	
+	var instance: String
+	
+	var error := false
 	if long < 3:
-		return ""
+		error = true
+	else:
+		instance = args[1]
 	
-	node = get_root_scene().get_node(args[1])
-	if not node:
-		return "The node not exists."
-	
-	var properties := node.get_property_list()
 	var entries := []
-	for i in args.slice(2):
-		if node.get(i) != null or node.get_property_list().any(func(p): return p.name == i):
-			entries.append("\t- %s: %s" % [i, node.get(i)])
+	if not error:
+		if node.has_node(instance):
+			node = node.get_node(instance)
 		else:
-			entries.append("\t- %s: not exists" % i)
+			return "The instance %s does not exists." % [instance]
+	
+		var properties := node.get_property_list()
+		for i in args.slice(2):
+			if node.get(i) != null or node.get_property_list().any(func(p): return p.name == i):
+				entries.append("\t- %s: %s" % [i, node.get(i)])
+			else:
+				entries.append("\t- %s: not exists" % i)
+	
+	if error:
+		return "Error: Incorrect use. Expected format: %s" % [COMAND_INSPECT]
 	
 	return "Properties [%s]\n" % [args[1]] + "\n".join(entries) if entries.size() > 0 else ""
 
 
 func _comands_exec(args: Array) -> String:
 	var long := args.size()
-	var node: Node
+	var node := get_root_scene()
 	
 	var instance = args[1]
 	var action = args[2]
 	var params = args.slice(3)
 	
+	var error := false
 	if long < 2:
-		return ""
+		error = true
 	
-	node = get_root_scene().get_node(instance)
-	if not node:
-		return "The node not exists."
-	
-	if node.has_method(action):
-		var result = node.callv(action, params)
-		return "Execute %s -> %s result: %s" % [instance, action, result]
-	
-	var value = node.get(action)
-	if value != null or node.get_property_list().any(func(p): return p.name == action):
-		if params.is_empty():
-			return "Instance %s Property %s: %s" % [instance, action, value]
+	if not error:
+		if node.has_node(instance):
+			node = node.get_node(instance)
+		else:
+			return "The instance %s does not exists." % [instance]
 		
-		if params.size() == 1:
-			node.set(action, params[0])
-			return "Instance %s Property %s set: %s" % [instance, action, params[0]]
+		# for methods
+		if node.has_method(action):
+			var result = node.callv(action, params)
+			return "Execute %s -> %s result: %s" % [instance, action, result]
+		
+		# for properties
+		var value = node.get(action)
+		if value != null or node.get_property_list().any(func(p): return p.name == action):
+			# only show value of the property
+			if params.is_empty():
+				return "Instance %s Property %s: %s" % [instance, action, value]
+			
+			# set value of the property
+			if params.size() == 1:
+				node.set(action, params[0])
+				return "Instance %s Property %s set: %s" % [instance, action, params[0]]
 	
-	return ""
+	# If you get here, it's an error
+	return "Error: Incorrect use. Expected format: %s" % [COMAND_EXEC]
 
 
 # Parses an array of parameters, converting strings to their appropriate data types when possible.
