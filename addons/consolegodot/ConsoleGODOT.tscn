@@ -1,0 +1,41 @@
+[gd_scene load_steps=4 format=3 uid="uid://ctb3gpfre36a1"]
+
+[ext_resource type="Script" path="res://addons/consolegodot/console_godot.gd" id="1_dwxhl"]
+[ext_resource type="Script" path="res://addons/consolegodot/output.gd" id="2_nf1nk"]
+[ext_resource type="Script" path="res://addons/consolegodot/promt.gd" id="3_4loxj"]
+
+[node name="ConsoleGodot" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dwxhl")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Output" type="RichTextLabel" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+script = ExtResource("2_nf1nk")
+
+[node name="Promt" type="LineEdit" parent="VBoxContainer"]
+layout_mode = 2
+script = ExtResource("3_4loxj")
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[connection signal="gui_input" from="VBoxContainer/Promt" to="." method="_on_promt_gui_input"]
+[connection signal="text_submitted" from="VBoxContainer/Promt" to="." method="_on_promt_text_submitted"]
