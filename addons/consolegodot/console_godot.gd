@@ -16,7 +16,7 @@ func _ready() -> void:
 
 func _on_promt_text_submitted(new_text: String) -> void:
 	_add_to_history(new_text)
-	var result := _console.do(new_text)
+	var result = _console.do(new_text)
 	
 	output.log_message(result)
 	promt.text = ""
@@ -24,7 +24,11 @@ func _on_promt_text_submitted(new_text: String) -> void:
 
 # Adds a command to the command history and resets the history index.
 func _add_to_history(command: String) -> void:
-	command_history.append(command)
+	var max := ProjectSettings.get_setting("addons/console/maximum historial records", 0)
+	if max > 0 and command_history.size() >= max:
+		command_history.pop_front()
+	
+	command_history.push_front(command)
 	history_index = -1
 
 

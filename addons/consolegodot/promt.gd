@@ -40,7 +40,11 @@ func _on_text_changed(new_text: String) -> void:
 		
 		var result := "\n".join(self.list_suggestions)
 		_suggestion.visible = true if result.length() > 0 else false
-		_suggestion.log_message(result)
+		
+		_suggestion.log_message({
+			"text": result,
+			"color": ProjectSettings.get_setting("addons/console/color_suggestion_inactive", Color.WHITE)
+		})
 	else:
 		_suggestion.visible = false
 

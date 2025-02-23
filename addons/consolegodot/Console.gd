@@ -36,25 +36,44 @@ func _init(node: Node) -> void:
 ## [br]
 ## @param command A string representing the command to execute.[br]
 ## @return The result of the command execution as a string.
-func do(command: String) -> String:
+func do(command: String) -> Dictionary:
 	var args := _parse_params(command.split(" "))
+	var response := {}
 	var result: String
 	
 	match args[0]:
 		COMAND_HELP:
-			result = _comands_help(args)
+			response = {
+				"text": _comands_help(args),
+				"color": ProjectSettings.get_setting("addons/console/color_info", Color.WHITE)
+			}
 		COMAND_CLEAR:
-			result = _comands_clear(args)
+			response = {
+				"text": _comands_clear(args),
+				"color": ProjectSettings.get_setting("addons/console/color_info", Color.WHITE)
+			}
 		COMAND_LIST:
-			result = _comands_list(args)
+			response = {
+				"text": _comands_list(args),
+				"color": ProjectSettings.get_setting("addons/console/color_info", Color.WHITE)
+			}
 		COMAND_INSPECT:
-			result = _comands_inspect(args)
+			response = {
+				"text": _comands_inspect(args),
+				"color": ProjectSettings.get_setting("addons/console/color_info", Color.WHITE)
+			}
 		COMAND_EXEC:
-			result = _comands_exec(args)
+			response = {
+				"text": _comands_exec(args),
+				"color": ProjectSettings.get_setting("addons/console/color_info", Color.WHITE)
+			}
 		_:
-			result = "Error: Incorrect use. Use help for most information"
+			response = {
+				"text": "Error: Incorrect use. Use help for most information",
+				"color": ProjectSettings.get_setting("addons/console/color_error", Color.WHITE)
+			}
 	
-	return result
+	return response
 
 
 ## Retrieves the root scene of the game or editor, depending on the context.

@@ -8,11 +8,24 @@
 
 config_version=5
 
+[addons]
+
+console/maximum_historial_records=50
+console/color_info=Color(1, 1, 1, 1)
+console/color_error=Color(1, 0, 0, 1)
+console/color_warning=Color(1, 1, 0, 1)
+console/color_succes=Color(0, 1, 0, 1)
+console/color_suggestion_inactive=Color(0.745098, 0.745098, 0.745098, 1)
+console/color_suggestion_active=Color(0, 0, 1, 1)
+
 [application]
 
 config/name="ConsoleGODOT"
 config/features=PackedStringArray("4.3", "Forward Plus")
-config/icon="res://icon.svg"
+
+[category]
+
+property_name=1
 
 [editor_plugins]
 
