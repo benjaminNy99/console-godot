@@ -2,9 +2,14 @@
 extends RichTextLabel
 
 
+enum type_message {OUTPUT, SUGGESTION}
+
+@export var type: type_message
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	if Engine.is_editor_hint():
+	if Engine.is_editor_hint() and type_message.OUTPUT:
 		var config = ConfigFile.new()
 		config.load("res://addons/consolegodot/plugin.cfg")
 		
@@ -17,6 +22,6 @@ func log_message(text: String) -> void:
 		clear()
 		return
 	
-	var format := "> %s\n"
+	var format := "> %s\n" if self.type == type_message.OUTPUT else "%s\n"
 	
 	append_text(format % [text])

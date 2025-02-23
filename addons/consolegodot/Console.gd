@@ -7,12 +7,20 @@ extends Resource
 ##
 ## It allows running predefined commands such as `clear`, `list`, `inspect`, and `exec`.
 
-
-const COMAND_HELP = "help [comand]"
+const COMAND_HELP = "help"
 const COMAND_CLEAR = "clear"
-const COMAND_LIST = "list [depth | path_of_nodo [depth]]"
-const COMAND_INSPECT = "inspect path_of_node property1 [property2 ...]"
-const COMAND_EXEC = "exec ruta_del_nodo metodo|propiedad [parametro1 ...]"
+const COMAND_LIST = "list"
+const COMAND_INSPECT = "inspect"
+const COMAND_EXEC = "exec"
+
+const COMAND_HELP_HELP = "help [comand]"
+const COMAND_CLEAR_HELP = "clear"
+const COMAND_LIST_HELP = "list [depth | path_of_nodo [depth]]"
+const COMAND_INSPECT_HELP = "inspect path_of_node property_1 [property_2 ...]"
+const COMAND_EXEC_HELP = "exec path_of_node method|property [params...]"
+
+static var list_comands := [COMAND_HELP, COMAND_CLEAR, COMAND_LIST, COMAND_INSPECT, COMAND_EXEC]
+static var list_path_of_node := [COMAND_LIST, COMAND_INSPECT, COMAND_EXEC]
 
 var _node: Node
 
@@ -33,15 +41,15 @@ func do(command: String) -> String:
 	var result: String
 	
 	match args[0]:
-		"help":
+		COMAND_HELP:
 			result = _comands_help(args)
-		"clear":
+		COMAND_CLEAR:
 			result = _comands_clear(args)
-		"list":
+		COMAND_LIST:
 			result = _comands_list(args)
-		"inspect":
+		COMAND_INSPECT:
 			result = _comands_inspect(args)
-		"exec":
+		COMAND_EXEC:
 			result = _comands_exec(args)
 		_:
 			result = "Error: Incorrect use. Use help for most information"
@@ -73,27 +81,27 @@ func _comands_help(args: Array) -> String:
 	match str(long):
 		"1":
 			result += "Help\n"
-			result += "\t- help		-> %s - %s\n" % [COMAND_HELP, message_help]
-			result += "\t- clear	-> %s - %s\n" % [COMAND_CLEAR, message_clear]
-			result += "\t- list		-> %s - %s\n" % [COMAND_LIST, message_list]
-			result += "\t- inspect	-> %s - %s\n" % [COMAND_INSPECT, message_inspect]
-			result += "\t- exec		-> %s - %s" % [COMAND_EXEC, message_exec]
+			result += "\t- help\t\t-> %s - %s\n" % [COMAND_HELP_HELP, message_help]
+			result += "\t- clear\t\t-> %s - %s\n" % [COMAND_CLEAR_HELP, message_clear]
+			result += "\t- list\t\t\t-> %s - %s\n" % [COMAND_LIST_HELP, message_list]
+			result += "\t- inspect\t-> %s - %s\n" % [COMAND_INSPECT_HELP, message_inspect]
+			result += "\t- exec\t\t-> %s - %s" % [COMAND_EXEC_HELP, message_exec]
 		"2":
 			match str(args[1]):
-				"help":
-					result = "Help comand help -> %s - %s" % [COMAND_HELP, message_help]
-				"clear":
-					result = "Help comand clear -> %s - %s" % [COMAND_CLEAR, message_clear]
-				"list":
-					result = "Help comand list -> %s - %s" % [COMAND_LIST, message_list]
-				"inspect":
-					result = "Help comand inspect -> %s - %s" % [COMAND_INSPECT, message_inspect]
-				"exec":
-					result = "Help comand exec -> %s - %s" % [COMAND_EXEC, message_exec]
+				COMAND_HELP:
+					result = "Help comand help -> %s - %s" % [COMAND_HELP_HELP, message_help]
+				COMAND_CLEAR:
+					result = "Help comand clear -> %s - %s" % [COMAND_CLEAR_HELP, message_clear]
+				COMAND_LIST:
+					result = "Help comand list -> %s - %s" % [COMAND_LIST_HELP, message_list]
+				COMAND_INSPECT:
+					result = "Help comand inspect -> %s - %s" % [COMAND_INSPECT_HELP, message_inspect]
+				COMAND_EXEC:
+					result = "Help comand exec -> %s - %s" % [COMAND_EXEC_HELP, message_exec]
 				_:
 					result = "Help, comand %s does not exists" % [args[1]]
 		_:
-			return "Error: Incorrect use. Expected format: %s" % [COMAND_HELP]
+			return "Error: Incorrect use. Expected format: %s" % [COMAND_HELP_HELP]
 	
 	return result
 
@@ -105,7 +113,7 @@ func _comands_clear(args: Array) -> String:
 		"1":
 			return ""
 	
-	return "Error: Incorrect use. Expected format: %s" % [COMAND_CLEAR]
+	return "Error: Incorrect use. Expected format: %s" % [COMAND_CLEAR_HELP]
 
 
 func _comands_list(args: Array) -> String:
@@ -141,7 +149,7 @@ func _comands_list(args: Array) -> String:
 			error = true
 	
 	if error:
-		return "Error: Incorrect use. Expected format: %s" % [COMAND_LIST]
+		return "Error: Incorrect use. Expected format: %s" % [COMAND_LIST_HELP]
 	
 	_get_nodes(node, node_counts, 0, max_depth)
 	
@@ -181,7 +189,7 @@ func _comands_inspect(args: Array) -> String:
 				entries.append("\t- %s: not exists" % i)
 	
 	if error:
-		return "Error: Incorrect use. Expected format: %s" % [COMAND_INSPECT]
+		return "Error: Incorrect use. Expected format: %s" % [COMAND_INSPECT_HELP]
 	
 	return "Properties [%s]\n" % [args[1]] + "\n".join(entries) if entries.size() > 0 else ""
 
@@ -222,7 +230,7 @@ func _comands_exec(args: Array) -> String:
 				return "Instance %s Property %s set: %s" % [instance, action, params[0]]
 	
 	# If you get here, it's an error
-	return "Error: Incorrect use. Expected format: %s" % [COMAND_EXEC]
+	return "Error: Incorrect use. Expected format: %s" % [COMAND_EXEC_HELP]
 
 
 # Parses an array of parameters, converting strings to their appropriate data types when possible.

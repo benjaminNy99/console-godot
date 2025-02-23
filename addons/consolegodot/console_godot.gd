@@ -6,16 +6,12 @@ var command_history: Array = []
 var history_index: int = -1
 var _console: Console
 
-@onready var output = get_node("VBoxContainer/Output")
-@onready var promt = get_node("VBoxContainer/Promt")
+@onready var output: RichTextLabel = $VBoxContainer/HBoxContainer/Output
+@onready var promt: LineEdit = $VBoxContainer/Promt
 
 
 func _ready() -> void:
 	_console = Console.new(self)
-	
-	var node := _console.get_root_scene()
-	if not node:
-		output.log_message("Not exists node root")
 
 
 func _on_promt_text_submitted(new_text: String) -> void:
@@ -34,7 +30,7 @@ func _add_to_history(command: String) -> void:
 
 # Handles keyboard input for the command prompt, specifically for navigating command history.
 func _on_promt_gui_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed:
+	if event is InputEventKey and event.is_pressed():
 		if event.keycode == KEY_UP:
 			var size := command_history.size()
 			if size > 0:
