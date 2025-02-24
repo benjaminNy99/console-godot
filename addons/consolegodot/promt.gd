@@ -43,7 +43,7 @@ func _on_text_changed(new_text: String) -> void:
 		
 		_suggestion.log_message({
 			"text": result,
-			"color": ProjectSettings.get_setting("addons/console/color_suggestion_inactive", Color.WHITE)
+			"type": "suggestion_inactive"
 		})
 	else:
 		_suggestion.visible = false

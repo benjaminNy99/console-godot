@@ -43,34 +43,19 @@ func do(command: String) -> Dictionary:
 	
 	match args[0]:
 		COMAND_HELP:
-			response = {
-				"text": _comands_help(args),
-				"color": ProjectSettings.get_setting("addons/console/color_info", Color.WHITE)
-			}
+			response = _comands_help(args)
 		COMAND_CLEAR:
-			response = {
-				"text": _comands_clear(args),
-				"color": ProjectSettings.get_setting("addons/console/color_info", Color.WHITE)
-			}
+			response = _comands_clear(args)
 		COMAND_LIST:
-			response = {
-				"text": _comands_list(args),
-				"color": ProjectSettings.get_setting("addons/console/color_info", Color.WHITE)
-			}
+			response = _comands_list(args)
 		COMAND_INSPECT:
-			response = {
-				"text": _comands_inspect(args),
-				"color": ProjectSettings.get_setting("addons/console/color_info", Color.WHITE)
-			}
+			response = _comands_inspect(args)
 		COMAND_EXEC:
-			response = {
-				"text": _comands_exec(args),
-				"color": ProjectSettings.get_setting("addons/console/color_info", Color.WHITE)
-			}
+			response = _comands_exec(args)
 		_:
 			response = {
 				"text": "Error: Incorrect use. Use help for most information",
-				"color": ProjectSettings.get_setting("addons/console/color_error", Color.WHITE)
+				"type": "error",
 			}
 	
 	return response
@@ -87,7 +72,7 @@ func get_root_scene() -> Node:
 	return null
 
 
-func _comands_help(args: Array) -> String:
+func _comands_help(args: Array) -> Dictionary:
 	var long := args.size()
 	
 	var message_help := "Show help for the comands"
@@ -120,22 +105,22 @@ func _comands_help(args: Array) -> String:
 				_:
 					result = "Help, comand %s does not exists" % [args[1]]
 		_:
-			return "Error: Incorrect use. Expected format: %s" % [COMAND_HELP_HELP]
+			return {"text": "Error: Incorrect use. Expected format: %s" % [COMAND_HELP_HELP], "type": "error"}
 	
-	return result
+	return {"text": result, "type": "info"}
 
 
-func _comands_clear(args: Array) -> String:
+func _comands_clear(args: Array) -> Dictionary:
 	var long := args.size()
 	
 	match str(long):
 		"1":
-			return ""
+			return {"text": "", "type": ""}
 	
-	return "Error: Incorrect use. Expected format: %s" % [COMAND_CLEAR_HELP]
+	return {"text": "Error: Incorrect use. Expected format: %s" % [COMAND_CLEAR_HELP], "type": "error"}
 
 
-func _comands_list(args: Array) -> String:
+func _comands_list(args: Array) -> Dictionary:
 	var long := args.size()
 	var node_counts := {}
 	var node: Node
@@ -168,7 +153,7 @@ func _comands_list(args: Array) -> String:
 			error = true
 	
 	if error:
-		return "Error: Incorrect use. Expected format: %s" % [COMAND_LIST_HELP]
+		return {"text": "Error: Incorrect use. Expected format: %s" % [COMAND_LIST_HELP], "type": "error"}
 	
 	_get_nodes(node, node_counts, 0, max_depth)
 	
@@ -178,10 +163,13 @@ func _comands_list(args: Array) -> String:
 	for i in node_counts.keys():
 		entries.append("\t- %s: %s" % [i, node_counts[i]])
 	
-	return "%s\n" % [result] + "\n".join(entries) if entries.size() > 0 else result
+	return {
+		"text": "%s\n" % [result] + "\n".join(entries) if entries.size() > 0 else result,
+		"type": "info",
+	}
 
 
-func _comands_inspect(args: Array) -> String:
+func _comands_inspect(args: Array) -> Dictionary:
 	var long := args.size()
 	var node := get_root_scene()
 	
@@ -198,7 +186,7 @@ func _comands_inspect(args: Array) -> String:
 		if node.has_node(instance):
 			node = node.get_node(instance)
 		else:
-			return "The instance %s does not exists." % [instance]
+			return {"text": "The instance %s does not exists." % [instance], "type": "warning"}
 	
 		var properties := node.get_property_list()
 		for i in args.slice(2):
@@ -208,12 +196,15 @@ func _comands_inspect(args: Array) -> String:
 				entries.append("\t- %s: not exists" % i)
 	
 	if error:
-		return "Error: Incorrect use. Expected format: %s" % [COMAND_INSPECT_HELP]
+		return {"text": "Error: Incorrect use. Expected format: %s" % [COMAND_INSPECT_HELP], "type": "error"}
 	
-	return "Properties [%s]\n" % [args[1]] + "\n".join(entries) if entries.size() > 0 else ""
+	return {
+		"text": "Properties [%s]\n" % [args[1]] + "\n".join(entries) if entries.size() > 0 else "",
+		"type": "info"
+	}
 
 
-func _comands_exec(args: Array) -> String:
+func _comands_exec(args: Array) -> Dictionary:
 	var long := args.size()
 	var node := get_root_scene()
 	
@@ -229,27 +220,27 @@ func _comands_exec(args: Array) -> String:
 		if node.has_node(instance):
 			node = node.get_node(instance)
 		else:
-			return "The instance %s does not exists." % [instance]
+			return {"text": "The instance %s does not exists." % [instance], "type": "warning"}
 		
 		# for methods
 		if node.has_method(action):
 			var result = node.callv(action, params)
-			return "Execute %s -> %s result: %s" % [instance, action, result]
+			return {"text": "Execute %s -> %s result: %s" % [instance, action, result], "type": "succes"}
 		
 		# for properties
 		var value = node.get(action)
 		if value != null or node.get_property_list().any(func(p): return p.name == action):
 			# only show value of the property
 			if params.is_empty():
-				return "Instance %s Property %s: %s" % [instance, action, value]
+				return {"text": "Instance %s Property %s: %s" % [instance, action, value], "type": "succes"}
 			
 			# set value of the property
 			if params.size() == 1:
 				node.set(action, params[0])
-				return "Instance %s Property %s set: %s" % [instance, action, params[0]]
+				return {"text": "Instance %s Property %s set: %s" % [instance, action, params[0]], "type": "succes"}
 	
 	# If you get here, it's an error
-	return "Error: Incorrect use. Expected format: %s" % [COMAND_EXEC_HELP]
+	return {"text": "Error: Incorrect use. Expected format: %s" % [COMAND_EXEC_HELP], "type": "error"}
 
 
 # Parses an array of parameters, converting strings to their appropriate data types when possible.

@@ -24,7 +24,7 @@ func log_message(response: Dictionary) -> void:
 		clear()
 		return
 	
-	var color: Color = response["color"]
+	var color: Color = _get_color(response)
 	var format
 	if self.type == type_message.OUTPUT:
 		format = "[color=%s]> %s[/color]\n" % [color.to_html(), text]
@@ -32,3 +32,25 @@ func log_message(response: Dictionary) -> void:
 		format = "[color=%s][i]%s[/i][/color]\n" % [color.to_html(), text]
 	
 	append_text(format)
+
+
+func _get_color(response: Dictionary) -> Color:
+	var color: Color
+	match response["type"]:
+		"info":
+			color = ProjectSettings.get_setting("addons/console/color_info", null)
+		"error":
+			color = ProjectSettings.get_setting("addons/console/color_error", null)
+		"warning":
+			color = ProjectSettings.get_setting("addons/console/color_warning", null)
+		"succes":
+			color = ProjectSettings.get_setting("addons/console/color_succes", null)
+		"suggestion_inactive":
+			color = ProjectSettings.get_setting("addons/console/color_suggestion_inactive", null)
+		"suggestion_active":
+			color = ProjectSettings.get_setting("addons/console/color_suggestion_active", null)
+	
+	if not color:
+		return Color.WHITE
+	
+	return color
